@@ -1,0 +1,403 @@
+<!DOCTYPE HTML>
+<!--
+Dimension by HTML5 UP
+html5up.net | @ajlkn
+Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+    <head>
+        <title>Upper Chore Scheduler</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+        <link rel="stylesheet" href="assets/css/main.css" />
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <!--[if lte IE 9]><link rel="stylesheet" href="assets/css/ie9.css" /><![endif]-->
+        <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon.png">
+        <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+    </head>
+    <body>
+
+        <!-- Wrapper -->
+        <div id="wrapper">
+
+            <!-- Header -->
+            <header id="header">
+                <div class="logo">
+                    <span class="icon fa-table"></span>
+                </div>
+                <div class="content">
+                    <div class="inner">
+                        <h1>Upper Chore Scheduler</h1>
+                        <p>A web app for the Men of Upper House<br />Coded by Michael Man '17</p>
+                    </div>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="#month">This Month</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#reminders">Reminders</a></li>
+                        <li><a href="#admin">Admin</a></li>
+                        <!--<li><a href="#elements">Elements</a></li>-->
+                    </ul>
+                </nav>
+            </header>
+
+            <!-- Main -->
+            <div id="main">
+
+                <!-- This Month -->
+                <article id="month"> 
+                    <h2 id="month-title" class="major" style="margin-bottom: 3vh; display:inline-block; border-bottom:solid 3px #ffffff;">April Chore Schedule</h2> <!-- ADD PHP -->
+                    <input type="button" value="Download PDF" class="special" onclick="downloadPDF()" disabled="true" id="pdf-button"/>
+                    <div id="schedule-container-month"></div>
+                </article>
+
+                <!-- About -->
+                <article id="about">
+                    <h2 class="major">About</h2>
+                    <p>This web app helps Upper house residents and dutymasters coordinate the daily chore schedule. My features include generating a schedule, downloading it in various forms, and also setting reminders for when it's your turn (coming soon!). Read below to learn about how I work!</p>
+                    <hr/>
+                    <h3 class="major">Student FAQ</h3>
+                    <p style="margin-bottom: 10px;"><b>Q:</b> How do I see my chore schedule?</p>
+                    <p><b>A:</b> You can see this month's chore schedule by clicking the "This Month" tab on the home screen. From there, can you use find (Control-F/Command-F) to see the days you have this month.</p>
+                    <p style="margin-bottom: 10px;"><b>Q:</b> Is there any way to save my schedule offline?</p>
+                    <p><b>A:</b> On the schedule page, there's an option to download the table in a PDF format. You can refer to that offline or print it out.</p>
+                    <p style="margin-bottom: 10px;"><b>Q:</b> When I try to upload, it prompts me for a password. What should I do?</p>
+                    <p><b>A:</b> The admin page is for housemasters only. Stay out!</p>
+                    <p style="margin-bottom: 10px;"><b>Q:</b> When I try to read this month's chore schedule, what do I do if I get an error?</p>
+                    <p><b>A:</b> If you recieve any errors, please report the error code and message to Michael Man ASAP.</p>
+                    <hr/>
+                    <h3 class="major">Housemaster FAQ</h3>
+                    <p style="margin-bottom: 10px;"><b>Q:</b> How often do I need to generate the chore schedule?</p>
+                    <p><b>A:</b> The algorithm is designed to generate a chore schedule for the entire year (assuming no changes in student roster). If there are any additions or subtractions from the list of Upper students, you will have to re-generate the schedule with the updated list of students.</p>
+                    <p style="margin-bottom: 10px;"><b>Q:</b> How do I format my input for the students?</p>
+                    <p><b>A:</b> The generation algorithm takes in a list of students separated by commas (space-optional). E.g. <i>John Smith, Joe Appleseed, Michael Man, ...</i></p>
+                    <p style="margin-bottom: 10px;"><b>Q:</b> What are the "Upload", "Download CSV" and "Upload CSV" buttons for?</p>
+                    <p><b>A:</b> Once you generate a chore schedule for the year, you need to Upload the data to the server to make it official and update the schedule stored in the server. The CSV upload/download buttons provide the option to store the entire year's data in a "comma separated values" format. This file can be opened in Excel and edited as needed. Uploading a CSV file parses the data and creates a chore schedule based on data in the file, which can then be uploaded to the server.</p>
+                    <p style="margin-bottom: 10px;"><b>Q:</b> What are the break dates for?</p>
+                    <p><b>A:</b> In order to maintain fairness in the algorithm, the algorithm takes in the major breaks (Thanksgiving, Winter, Spring, Summer) in order to know which days will not have any chores. Simply input the days each break starts and ends. I've defaulted the values with the dates for the 2016-2017 school year.</p>
+                    
+                    <hr/>
+                    <h3 class="major">The Algorithm</h3>
+                    <p>My algorithm relies on separating the student input into 6 roughly equal groups. Each group starts with a certain position (kitchen 1, kitchen 2, trash 1, trash 2, vacuum 1, vacuum 2). As the program generates a six-man team for every day, the arrays (lists) are cycled. When each list reaches the last person, the position is fed from another array, ensuring that no one will repeat the same chore twice.</p>
+                    <h4>Feeder array construction</h4>
+                    <pre><code>/* K1: 0, K2: 1, T1: 2, T2: 3, V1: 4, V2: 5 */
+var K1 = groups[0].concat(groups[4]).concat(groups[2]);
+var T1 = groups[2].concat(groups[0]).concat(groups[4]);
+var V1 = groups[4].concat(groups[2]).concat(groups[0]);
+var K2 = groups[1].concat(groups[3]).concat(groups[5]);
+var T2 = groups[3].concat(groups[5]).concat(groups[1]);
+var V2 = groups[5].concat(groups[1]).concat(groups[3]);
+</code></pre>
+                    <p style="margin-bottom: 10px;">This algorithm ensures that:</p>
+                        <ol>
+                            <li>Everyone will cycle through all three chores (K, T, V), and with an equal distribution of the three.</li>
+                            <li>There will be dynamic partnering, as in your partner will change every week with no repetition (manual offset created for the modulo 6 case).</li>
+                            <li>The average "distance" between each chore day remains <b>constant</b> at ~ N/6 days. If there are 60 boarders, you should have chores every 10 days.</li>
+                        </ol>
+                </article>
+
+                <!-- Reminders -->
+                <article id="reminders">
+                    <h2 class="major">Reminders</h2>
+                    <p>You can set reminders here! Feature coming soon.</p>
+                </article>
+
+                <!-- Contact -->
+                <article id="admin">
+                    <h2 class="major">Housemaster Page</h2>
+                    <form method="post" action="#">
+                        <div class="field">
+                            <label for="message">Names (separated with commas)</label>
+                            <textarea name="names" id="name_input" rows="4"></textarea>
+                        </div>
+                        <ul class="actions">
+                            <li><input type="button" value="Generate" class="special" onclick="generate(100)"/></li>
+                            <li><input type="button" value="Upload" class="special" disabled="true" onclick="upload()" id="upload-button"/>
+                            <li><input type="button" value="Download CSV" class="special" disabled="true" onclick="downloadCSV()" id="csv-button"/></li>
+                            <li><label class="custom-file-upload"><input type="file" name="File Upload" id="file-upload" accept=".csv" />Upload CSV</label></li>
+                            <br><br>
+                            <li><p>Year Start<input type="text" id="year_s" class="date_select"></p></li>
+                            <li><p>TG Start<input type="text" id="thanks_s" class="date_select"></p></li>
+                            <li><p>TG End<input type="text" id="thanks_e" class="date_select"></p></li>
+                            <li><p>Winter Start<input type="text" id="winter_s" class="date_select"></p></li>
+                            <li><p>Winter End<input type="text" id="winter_e" class="date_select"></p></li>
+                            <li><p>Spring Start<input type="text" id="spring_s" class="date_select"></p></li>
+                            <li><p>Spring End<input type="text" id="spring_e" class="date_select"></p></li>
+                            <li><p>Year End<input type="text" id="year_e" class="date_select"></p></li>
+                        </ul>
+
+                        <!-- TODO: Put date/break options here! -->
+                    </form>
+
+                    <div id="schedule-container-admin"></div>
+
+                </article>
+
+                <!-- Elements -->
+                <article id="elements">
+                    <h2 class="major">Elements</h2>
+
+                    <section>
+                        <h3 class="major">Text</h3>
+                        <p>This is <b>bold</b> and this is <strong>strong</strong>. This is <i>italic</i> and this is <em>emphasized</em>.
+                            This is <sup>superscript</sup> text and this is <sub>subscript</sub> text.
+                            This is <u>underlined</u> and this is code: <code>for (;;) { ... }</code>. Finally, <a href="#">this is a link</a>.</p>
+                        <hr />
+                        <h2>Heading Level 2</h2>
+                        <h3>Heading Level 3</h3>
+                        <h4>Heading Level 4</h4>
+                        <h5>Heading Level 5</h5>
+                        <h6>Heading Level 6</h6>
+                        <hr />
+                        <h4>Blockquote</h4>
+                        <blockquote>Fringilla nisl. Donec accumsan interdum nisi, quis tincidunt felis sagittis eget tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan faucibus. Vestibulum ante ipsum primis in faucibus lorem ipsum dolor sit amet nullam adipiscing eu felis.</blockquote>
+                        <h4>Preformatted</h4>
+                        <pre><code>i = 0;
+
+while (!deck.isInOrder()) {
+    print 'Iteration ' + i;
+    deck.shuffle();
+    i++;
+}
+
+print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
+                    </section>
+
+                    <section>
+                        <h3 class="major">Lists</h3>
+
+                        <h4>Unordered</h4>
+                        <ul>
+                            <li>Dolor pulvinar etiam.</li>
+                            <li>Sagittis adipiscing.</li>
+                            <li>Felis enim feugiat.</li>
+                        </ul>
+
+                        <h4>Alternate</h4>
+                        <ul class="alt">
+                            <li>Dolor pulvinar etiam.</li>
+                            <li>Sagittis adipiscing.</li>
+                            <li>Felis enim feugiat.</li>
+                        </ul>
+
+                        <h4>Ordered</h4>
+                        <ol>
+                            <li>Dolor pulvinar etiam.</li>
+                            <li>Etiam vel felis viverra.</li>
+                            <li>Felis enim feugiat.</li>
+                            <li>Dolor pulvinar etiam.</li>
+                            <li>Etiam vel felis lorem.</li>
+                            <li>Felis enim et feugiat.</li>
+                        </ol>
+                        <h4>Icons</h4>
+                        <ul class="icons">
+                            <li><a href="#" class="icon fa-twitter"><span class="label">Twitter</span></a></li>
+                            <li><a href="#" class="icon fa-facebook"><span class="label">Facebook</span></a></li>
+                            <li><a href="#" class="icon fa-instagram"><span class="label">Instagram</span></a></li>
+                            <li><a href="#" class="icon fa-github"><span class="label">Github</span></a></li>
+                        </ul>
+
+                        <h4>Actions</h4>
+                        <ul class="actions">
+                            <li><a href="#" class="button special">Default</a></li>
+                            <li><a href="#" class="button">Default</a></li>
+                        </ul>
+                        <ul class="actions vertical">
+                            <li><a href="#" class="button special">Default</a></li>
+                            <li><a href="#" class="button">Default</a></li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h3 class="major">Table</h3>
+                        <h4>Default</h4>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Item One</td>
+                                        <td>Ante turpis integer aliquet porttitor.</td>
+                                        <td>29.99</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Item Two</td>
+                                        <td>Vis ac commodo adipiscing arcu aliquet.</td>
+                                        <td>19.99</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Item Three</td>
+                                        <td> Morbi faucibus arcu accumsan lorem.</td>
+                                        <td>29.99</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Item Four</td>
+                                        <td>Vitae integer tempus condimentum.</td>
+                                        <td>19.99</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Item Five</td>
+                                        <td>Ante turpis integer aliquet porttitor.</td>
+                                        <td>29.99</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="2"></td>
+                                        <td>100.00</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <h4>Alternate</h4>
+                        <div class="table-wrapper">
+                            <table class="alt">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Item One</td>
+                                        <td>Ante turpis integer aliquet porttitor.</td>
+                                        <td>29.99</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Item Two</td>
+                                        <td>Vis ac commodo adipiscing arcu aliquet.</td>
+                                        <td>19.99</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Item Three</td>
+                                        <td> Morbi faucibus arcu accumsan lorem.</td>
+                                        <td>29.99</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Item Four</td>
+                                        <td>Vitae integer tempus condimentum.</td>
+                                        <td>19.99</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Item Five</td>
+                                        <td>Ante turpis integer aliquet porttitor.</td>
+                                        <td>29.99</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="2"></td>
+                                        <td>100.00</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h3 class="major">Buttons</h3>
+                        <ul class="actions">
+                            <li><a href="#" class="button special">Special</a></li>
+                            <li><a href="#" class="button">Default</a></li>
+                        </ul>
+                        <ul class="actions">
+                            <li><a href="#" class="button">Default</a></li>
+                            <li><a href="#" class="button small">Small</a></li>
+                        </ul>
+                        <ul class="actions">
+                            <li><a href="#" class="button special icon fa-download">Icon</a></li>
+                            <li><a href="#" class="button icon fa-download">Icon</a></li>
+                        </ul>
+                        <ul class="actions">
+                            <li><span class="button special disabled">Disabled</span></li>
+                            <li><span class="button disabled">Disabled</span></li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h3 class="major">Form</h3>
+                        <form method="post" action="#">
+                            <div class="field half first">
+                                <label for="demo-name">Name</label>
+                                <input type="text" name="demo-name" id="demo-name" value="" placeholder="Jane Doe" />
+                            </div>
+                            <div class="field half">
+                                <label for="demo-email">Email</label>
+                                <input type="email" name="demo-email" id="demo-email" value="" placeholder="jane@untitled.tld" />
+                            </div>
+                            <div class="field">
+                                <label for="demo-category">Category</label>
+                                <div class="select-wrapper">
+                                    <select name="demo-category" id="demo-category">
+                                        <option value="">-</option>
+                                        <option value="1">Manufacturing</option>
+                                        <option value="1">Shipping</option>
+                                        <option value="1">Administration</option>
+                                        <option value="1">Human Resources</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="field half first">
+                                <input type="radio" id="demo-priority-low" name="demo-priority" checked>
+                                <label for="demo-priority-low">Low</label>
+                            </div>
+                            <div class="field half">
+                                <input type="radio" id="demo-priority-high" name="demo-priority">
+                                <label for="demo-priority-high">High</label>
+                            </div>
+                            <div class="field half first">
+                                <input type="checkbox" id="demo-copy" name="demo-copy">
+                                <label for="demo-copy">Email me a copy</label>
+                            </div>
+                            <div class="field half">
+                                <input type="checkbox" id="demo-human" name="demo-human" checked>
+                                <label for="demo-human">Not a robot</label>
+                            </div>
+                            <div class="field">
+                                <label for="demo-message">Message</label>
+                                <textarea name="demo-message" id="demo-message" placeholder="Enter your message" rows="6"></textarea>
+                            </div>
+                            <ul class="actions">
+                                <li><input type="submit" value="Send Message" class="special" /></li>
+                                <li><input type="reset" value="Reset" /></li>
+                            </ul>
+                        </form>
+                    </section>
+
+                </article>
+
+            </div>
+
+            <!-- Footer -->
+            <footer id="footer">
+            </footer>
+
+        </div>
+
+        <!-- BG -->
+        <div id="bg"></div>
+
+        <!-- Scripts -->
+        <script src="assets/js/jquery.min.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+        <script src="assets/js/skel.min.js"></script>
+        <script src="assets/js/util.js"></script>
+        <script src="assets/js/main.js"></script>
+        <script src="assets/js/html2pdf.js"></script>
+        <script src="assets/js/jspdf.debug.js"></script>
+        <script src="assets/js/jspdf.plugin.autotable.min.js"></script>
+        <script src="/algorithm-js/io.js"></script>
+        <script src="/algorithm-js/main.js"></script>
+        <script src="/algorithm-js/moment.js"></script>
+    </body>
+</html>
